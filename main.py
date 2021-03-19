@@ -143,8 +143,10 @@ class Join(QtWidgets.QMainWindow):
                     return
                 else:
                     pass
+                # деканат
             else:
                 pass
+            # приёмная комиссия
         else:
             try:
                 self.win = Menu(self, person=ex)

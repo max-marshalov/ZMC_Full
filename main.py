@@ -7,6 +7,10 @@ from join import *
 import sys
 import os
 from menu import *
+from Zap_Step1 import *
+from Zap_Step2 import *
+from Zap_Step3 import *
+from Zap_Step4 import *
 
 
 class Reg(QtWidgets.QMainWindow):
@@ -146,6 +150,79 @@ class Join(QtWidgets.QMainWindow):
     def go_reg(self):
         try:
             self.win = Reg(self)
+            self.close()
+            self.win.show()
+
+        except Exception as er:
+            print(er)
+
+
+class Zap_Step1(QtWidgets.QMainWindow):
+    def __init__(self, parent=None, person=None):
+        QtWidgets.QWidget.__init__(self, parent)
+        self.ui = Ui_Zap_Step1()
+        self.ui.setupUi(self)
+
+        self.person = person
+
+        self.ui.btn_next.clicked.connect(self.go_next)
+
+        self.ui.btn_load_photo.clicked.connect(self.load_photo)
+
+    def load_photo(self):
+        self.file_path = QtWidgets.QFileDialog.getOpenFileName(self, 'headers', 'filename')
+
+    def go_next(self):
+        radio_base_sex = [self.ui.radioButton_female, self.ui.radioButton_male]
+        Surname = self.ui.edit_surname.text()
+        Name = self.ui.edit_name.text()
+        Otch = self.ui.edit_dad.text()
+        Sex = None
+        for i in radio_base_sex:
+            if i.isChecked():
+                Sex = i.text()
+        Login = self.ui.edit_mail.text()
+        Date = self.ui.edit_date.text()
+        Phone = self.ui.edit_phone.text()
+        Birth_place = self.ui.edit_birth_place.text()
+        Life = None
+        Photo = self.file_path
+        radio_base_life = [self.ui.radioButton_yes, self.ui.radioButton_no]
+        for i in radio_base_life:
+            if i.isChecked():
+                Life = i.text()
+
+        id = self.person[0][0]
+
+        con = sqlite3.connect("DATABASE.db")
+        curs = con.cursor()
+        curs.execute(
+            f"""UPDATE UserForm SET name = "{Name}", surname = "{Surname}", otchestvo = "{Otch}", sex = "{Sex}", email = "{Login}", birthday = "{Date}", place_of_birth = "{Birth_place}", phone_number = "{Phone}", photo_path = "{Photo}", campus = "{Life}" WHERE id = "{id}" """)  # если не будет работать, убери кавычки на id
+        con.commit()
+        con.close()
+
+        try:
+            self.win = Zap_Step2(self, person=self.person)
+            self.close()
+            self.win.show()
+
+        except Exception as er:
+            print(er)
+
+
+class Zap_Step2(QtWidgets.QMainWindow):
+    def __init__(self, parent=None, person=None):
+        QtWidgets.QWidget.__init__(self, parent)
+        self.ui = Ui_Zap_Step2()
+        self.ui.setupUi(self)
+
+        self.person = person
+
+        self.ui.btn_next.clicked.connect(self.go_next)
+
+    def go_next(self):
+        try:
+            self.win = Zap_Step3(self, person=self.person)
             self.close()
             self.win.show()
 

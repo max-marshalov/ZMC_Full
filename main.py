@@ -3,20 +3,24 @@ from PyQt5.QtCore import Qt
 from PyQt5 import QtWidgets, QtGui, QtCore
 import sqlite3
 from reg import *
+from docxtpl import DocxTemplate
 from join import *
 from Results_Table import *
 from startwindow import *
 from check import *
 import sys
 import os
+from anketa import *
 from student_room import *
 from contacts import *
+from main_window import *
 from menu import *
 from Zap_Step1 import *
 from Zap_Step2 import *
 from Zap_Step3 import *
 from Zap_Step4 import *
 import smtplib
+from docx import Document
 
 yandex_mail = 'info40.sgu@mail.ru'
 yandex_pass = 'Team40SGU'
@@ -32,6 +36,277 @@ def send_emails(mail, msg):
     server.sendmail(yandex_mail, send_to_email, msg)
     server.quit()
     print('E-mails successfully sent!')
+
+
+class Anketa(QMainWindow, Ui_Anketa):
+    def __init__(self, path, user, main_user):
+        self.user = user
+        self.main_user = main_user
+        self.path = path
+        super().__init__()
+        self.setupUi(self)
+        self.con = sqlite3.connect(self.path)
+        self.curs = self.con.cursor()
+
+        self.btn_go_to_menu.clicked.connect(self.go_to_menu)
+        self.btn_photo.clicked.connect(self.shw_photo)
+
+        self.btn_save.clicked.connect(self.save_1)
+        self.btn_save_2.clicked.connect(self.save_2)
+        self.btn_save_3.clicked.connect(self.save_3)
+
+        self.paper = self.curs.execute(
+            f"""SELECT serial_number, number, gave, code, date FROM Paper WHERE id = {self.user}""").fetchone()
+
+        self.id = self.curs.execute(
+            f"""SELECT FIO FROM Students WHERE id = {self.user}""").fetchone()[0]
+
+        self.fio = self.curs.execute(
+            f"""SELECT FIO FROM UserForm WHERE id = {self.id}""").fetchone()[0]
+
+        self.sex = self.curs.execute(
+            f"""SELECT sex FROM UserForm WHERE id = {self.id}""").fetchone()[0]
+
+        self.birthday = self.curs.execute(
+            f"""SELECT birthday FROM UserForm WHERE id = {self.id}""").fetchone()[0]
+
+        self.year_join = int(self.curs.execute(
+            f"""SELECT year FROM Students WHERE id = {self.user}""").fetchone()[0])
+        print(self.fio)
+        dt = self.fio.split(" ")
+
+        self.surname = dt[0]
+        self.name = dt[1]
+        self.otch = dt[2]
+        self.data = \
+            self.curs.execute(
+                f"""Select study_ticket_number, facultet, Groups from Students where id = {self.user}""").fetchall()[
+                0]
+        self.tk_number = self.user
+        self.facultet = self.data[1]
+        self.group = self.data[2]
+
+        self.label_fio.setText(self.fio)
+        self.label_sex.setText(self.sex)
+        self.label_birthday.setText(str(self.birthday))
+
+        self.edit_serial.setText(str(self.paper[0]))
+        self.edit_number.setText(str(self.paper[1]))
+        self.edit_gave.setText(str(self.paper[2]))
+        self.edit_code.setText(str(self.paper[3]))
+        self.edit_date.setText(str(self.paper[4]))
+        self.btn_study_ticket.clicked.connect(self.study_ticket)
+        self.btn_zachetka.clicked.connect(self.zach_book)
+
+        self.phone_number = self.curs.execute(
+            f"""SELECT phone_number FROM UserForm WHERE id = {self.id}""").fetchone()[0]
+
+        self.mail = self.curs.execute(
+            f"""SELECT email FROM UserForm WHERE id = {self.id}""").fetchone()[0]
+
+        self.reg_adress = self.curs.execute(
+            f"""SELECT reg_address FROM Students WHERE id = {self.user}""").fetchone()[0]
+
+        self.reg_adress = self.curs.execute(
+            f"""SELECT address_index, city, street, house, flat FROM Address WHERE id = {self.reg_adress}""").fetchone()
+
+        self.live_adress = self.curs.execute(
+            f"""SELECT live_address FROM Students WHERE id = {self.user}""").fetchone()[0]
+
+        self.live_adress = self.curs.execute(
+            f"""SELECT address_index, city, street, house, flat FROM Address WHERE id = {self.live_adress}""").fetchone()
+
+        self.edit_adress_1.setText(
+            f"{self.reg_adress[0]}, {self.reg_adress[1]}, {self.reg_adress[2]}, {self.reg_adress[3]}, {self.reg_adress[4]}")
+        self.edit_adress_2.setText(
+            f"{self.live_adress[0]}, {self.live_adress[1]}, {self.live_adress[2]}, {self.live_adress[3]}, {self.live_adress[4]}")
+        self.edit_phone_number.setText(str(self.phone_number))
+        self.edit_email.setText(str(self.mail))
+
+        self.branch = self.curs.execute(
+            f"""SELECT Branch FROM Students WHERE id = {self.user}""").fetchone()[0]
+
+        self.facultet_name = self.curs.execute(
+            f"""SELECT name FROM Facultets WHERE id = {self.facultet}""").fetchone()[0]
+
+        self.branch_name = self.curs.execute(
+            f"""SELECT name FROM Branches WHERE id = {self.branch}""").fetchone()[0]
+
+        self.join_date = self.curs.execute(
+            f"""SELECT join_date FROM Students WHERE id = {self.user}""").fetchone()[0]
+
+        self.leave_date = self.curs.execute(
+            f"""SELECT leave_date FROM Students WHERE id = {self.user}""").fetchone()[0]
+
+        self.label_facultet.setText(str(self.facultet_name))
+        self.label_branch.setText(str(self.branch_name))
+
+        self.comboBox_group_number.setCurrentIndex(int(self.group) - 1)
+        self.label_stud_number.setText(str(self.user))
+        self.label_zach_number.setText(str(self.user))
+        self.edit_chit_bilet.setText(str(self.user))
+
+        self.label_date_zach.setText(str(self.join_date))
+        self.label_date_otch.setText(str(self.leave_date))
+
+    def question(self):
+        pass
+
+    def study_ticket(self):
+        if self.facultet == 1:
+            self.dec = " Пупкин В.Э."
+        elif self.facultet == 2:
+            self.dec = "Иванов И.И."
+        self.doc = DocxTemplate(os.path.abspath("Формат студ билета.docx"))
+        context = {'study_number': "{}".format(self.tk_number), 'surname': "{}".format(self.surname),
+                   'name': "{}".format(self.name),
+                   'otch': "{}".format(self.otch), 'facultet': "{}".format(self.facultet_name),
+                   'group': "{}".format(self.group),
+                   'year1': "{}".format(self.year_join), 'year2': "{}".format(self.year_join + 1),
+                   'year3': "{}".format(self.year_join + 2),
+                   'year4': "{}".format(self.year_join + 3), 'year5': "{}".format(self.year_join + 4),
+                   'year6': "{}".format(self.year_join + 5),
+                   'level1': "{}".format(1), 'level2': "{}".format(2), 'level3': "{}".format(3),
+                   'level4': "{}".format(4),
+                   'level5': "{}".format(5), 'level6': "{}".format(6), 'decan': "{}".format(self.dec)}
+        self.doc.render(context)
+        self.doc.save("Билет.docx")
+        os.startfile(os.path.abspath("Билет.docx"), "print")
+
+    def zach_book(self):
+        self.zachetka = DocxTemplate(os.path.abspath("Формат зачетной книжки.docx"))
+        context = {'number': self.tk_number, 'fio': self.fio, 'facultet': self.facultet_name, 'spec': self.branch_name}
+        self.zachetka.render(context)
+        self.zachetka.save("Зачетка.docx")
+        os.startfile(os.path.abspath("Зачетка.docx"), "print")
+
+    def shw_photo(self):
+        dt = self.curs.execute(f"""Select photo_path from UserForm where id = {self.id}""").fetchall()[0][0]
+        self.ex = Example(dt)
+        self.ex.show()
+
+    def save_1(self):
+        self.curs.execute(
+            f"""UPDATE Paper set serial_number = '{self.edit_serial.text()}', number = '{self.edit_number.text()}', gave = '{self.edit_gave.text()}', code = '{self.edit_code.text()}', date = '{self.edit_date.text()}' WHERE id = {self.user}"""
+        )
+        self.con.commit()
+
+    def save_2(self):
+        try:
+            self.curs.execute(
+                f"""UPDATE UserForm set phone_number = '{self.edit_phone_number.text()}', email = '{str(
+                    self.edit_email.text())}' WHERE id = {self.id}"""
+            )
+            self.con.commit()
+        except Exception as ex:
+            print(ex)
+
+        self.reg_adress = self.curs.execute(
+            f"""SELECT reg_address FROM Students WHERE id = {self.user}""").fetchone()[0]
+
+        self.live_adress = self.curs.execute(
+            f"""SELECT live_address FROM Students WHERE id = {self.user}""").fetchone()[0]
+
+        self.reg_base = self.edit_adress_1.text().split(', ')
+        self.live_base = self.edit_adress_2.text().split(', ')
+
+        try:
+            self.curs.execute(
+                f"""UPDATE Address set address_index = '{str(self.reg_base[0])}', city = '{str(
+                    self.reg_base[1])}', street = '{str(self.reg_base[2])}', house = '{str(
+                    self.reg_base[3])}', flat = '{str(self.reg_base[4])}' WHERE id = {self.reg_adress}"""
+            )
+
+            self.curs.execute(
+                f"""UPDATE Address set address_index = '{str(self.live_base[0])}', city = '{str(
+                    self.live_base[1])}', street = '{str(self.live_base[2])}', house = '{str(
+                    self.live_base[3])}', flat = '{str(self.live_base[4])}' WHERE id = {self.live_adress}"""
+            )
+
+            self.con.commit()
+        except Exception as ex:
+            print(ex)
+
+    def save_3(self):
+        try:
+            self.gr = self.curs.execute(
+                f"""SELECT id FROM Groups WHERE name = '{self.comboBox_group_number.currentText()}'""").fetchone()[0]
+
+            self.curs.execute(
+                f"""UPDATE Students set Groups = '{self.gr}' WHERE id = {self.user}"""
+            )
+            self.con.commit()
+        except Exception as ex:
+            print(ex)
+
+    def go_to_menu(self):
+        self.win = Dekanat("DATABASE.db", self.main_user)
+        self.win.show()
+        self.close()
+
+
+class Dekanat(QMainWindow, Ui_Dekanat):
+    def __init__(self, path, user):
+        self.path = path
+        self.user = user
+        super(Dekanat, self).__init__()
+        self.setupUi(self)
+        self.con = sqlite3.connect(self.path)
+        self.curs = self.con.cursor()
+        if self.user == 1:
+            self.comboBox.removeItem(3)
+            self.comboBox.removeItem(3)
+        elif self.user == 2:
+            self.comboBox.removeItem(0)
+            self.comboBox.removeItem(0)
+            self.comboBox.removeItem(0)
+        self.update_data()
+        self.comboBox.currentTextChanged.connect(self.update_data)
+        self.tableWidget.cellClicked.connect(self.student)
+
+    def update_data(self):
+        self.brch = self.curs.execute(
+            """Select id From Branches WHERE name = "{}" """.format(self.comboBox.currentText())).fetchall()[0][0]
+        print(self.brch)
+        self.dt = self.curs.execute("""Select id, FIO from Students Where Branch = {} """.format(self.brch)).fetchall()
+        print(self.dt)
+        if self.dt:
+
+            for j in self.dt:
+                data = []
+
+                k = self.curs.execute("""Select FIO from UserForm Where id = {} """.format(j[1])).fetchall()[0][0]
+                # print(j[0], k)
+
+                data.append((j[0], k))
+                # print(data)
+                self.update_table(data)
+        else:
+            self.update_table(self.dt)
+
+    def update_table(self, data):
+        # print(data)
+        self.tableWidget.setRowCount(0)
+        n = len(data)
+        try:
+            self.tableWidget.setRowCount(n)
+            for i in range(n):
+                self.tableWidget.setItem(i, 0, QTableWidgetItem())
+                self.tableWidget.setItem(i, 1, QTableWidgetItem())
+
+                self.tableWidget.item(i, 0).setText(str(data[i][0]))
+                self.tableWidget.item(i, 1).setText(str(data[i][1]))
+        except Exception as er:
+            print(er)
+
+    def student(self):
+        try:
+            self.win = Anketa("DATABASE.db", int(self.tableWidget.item(self.tableWidget.currentRow(), 0).text()),
+                              self.user)
+            self.close()
+            self.win.show()
+        except Exception as error:
+            print(error)
 
 
 class CheckWindow(QMainWindow, Ui_Check):
@@ -659,14 +934,17 @@ class Join(QtWidgets.QMainWindow):
                 """Select * FROM Join_party where name = '{}' and password = '{}'""".format(Login, Password)).fetchone()
 
             if not ex:
-                ex = curs.execute("""Select * FROM Decanat where name = "{}" and password = "{}" """.format(Login,
+                ex = curs.execute("""Select Facultet FROM Decanat where name = "{}" and password = "{}" """.format(Login,
                                                                                                             Password)).fetchone()
                 if not ex:
                     self.ui.label_error.setText("Неверный логин или пароль")
                     self.ui.label_error.show()
                     return
                 else:
-                    pass  # Деканат
+                    print(ex[0])
+                    self.win = Dekanat("DATABASE.db", ex[0])
+                    self.close()
+                    self.win.show()
             else:
                 try:
                     self.win = UI_Komissia("DATABASE.db")
@@ -746,7 +1024,6 @@ class Zap_Step1(QtWidgets.QMainWindow):
 
         Photo = None
         Photo = self.file_path
-        print('ok')
         radio_base_life = [self.ui.radioButton_yes, self.ui.radioButton_no]
         for i in radio_base_life:
             if i.isChecked():

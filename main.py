@@ -132,12 +132,19 @@ class Join(QtWidgets.QMainWindow):
         curs = con.cursor()
         ex = curs.execute(
             """SELECT * FROM UserForm WHERE email = "{}" and password = "{}" """.format(Login, Password)).fetchone()
-        con.commit()
-        con.close()
+
         if not ex:
-            self.ui.label_error.setText("Неверный логин или пароль")
-            self.ui.label_error.show()
-            return
+            ex = curs.execute("""Select * FROM Join_party where name = "{}" and password = {}""".format(Login, Password)).fetchone()
+            if not ex:
+                ex = curs.execute("""Select * FROM Decanat where name = "{}" and password = "{}" """.format(Login, Password)).fetchone()
+                if not ex:
+                    self.ui.label_error.setText("Неверный логин или пароль")
+                    self.ui.label_error.show()
+                    return
+                else:
+                    pass
+            else:
+                pass
         else:
             try:
                 self.win = Menu(self, person=ex)

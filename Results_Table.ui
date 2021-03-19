@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Results_Table</class>
+ <widget class="QMainWindow" name="Results_Table">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>800</width>
+    <height>600</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <widget class="QTableWidget" name="tableWidget">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>60</y>
+      <width>761</width>
+      <height>441</height>
+     </rect>
+    </property>
+    <property name="sortingEnabled">
+     <bool>true</bool>
+    </property>
+    <column>
+     <property name="text">
+      <string>ФИО</string>
+     </property>
+    </column>
+    <column>
+     <property name="text">
+      <string>Баллы ЕГЭ</string>
+     </property>
+    </column>
+    <column>
+     <property name="text">
+      <string>Баллы ИД</string>
+     </property>
+    </column>
+    <column>
+     <property name="text">
+      <string>Оригинал</string>
+     </property>
+    </column>
+   </widget>
+   <widget class="QLabel" name="label">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>10</y>
+      <width>151</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>14</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>Таблица по:</string>
+    </property>
+   </widget>
+   <widget class="QComboBox" name="comboBox">
+    <property name="geometry">
+     <rect>
+      <x>140</x>
+      <y>20</y>
+      <width>331</width>
+      <height>22</height>
+     </rect>
+    </property>
+    <item>
+     <property name="text">
+      <string>Университет</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>Прикладная математика</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>Информатика и вычислительная техника</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>Автоматизация управления в технических системах</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>Инфокоммуникационные технологии</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>Защищенные сети и системы</string>
+     </property>
+    </item>
+   </widget>
+   <widget class="QPushButton" name="btn_go_to_main">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>560</y>
+      <width>241</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Вернуться на главную</string>
+    </property>
+   </widget>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

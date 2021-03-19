@@ -1096,8 +1096,29 @@ class Zap_Step2(QtWidgets.QMainWindow):
         self.person = person
 
         self.ui.btn_next.clicked.connect(self.go_next)
+        self.ui.btn_load_photo.clicked.connect(self.load_photo)
+
+    def load_photo(self):
+        self.file_path = QtWidgets.QFileDialog.getOpenFileName(self, 'headers', 'filename')
 
     def go_next(self):
+
+        Serial = self.ui.edit_serial.text()
+        Number = self.ui.edit_number.text()
+        Gave = self.ui.edit_vidan.text()
+        Code = self.ui.edit_code.text()
+        Date = self.ui.edit_date_vi.text()
+
+        con = sqlite3.connect("DATABASE.db")
+        curs = con.cursor()
+        try:
+            curs.execute(
+                f"""UPDATE Paper SET serial_number = '{Serial}', number = '{Number}', gave = '{Gave}', code = '{Code}', date = '{Date}' WHERE id = "{self.person[0]}" """)  # если не будет работать, убери кавычки на id
+            con.commit()
+            con.close()
+        except Exception as excep:
+            print(excep)
+
         try:
             self.win = Zap_Step3(self, person=self.person)
             self.close()
@@ -1118,6 +1139,10 @@ class Menu(QtWidgets.QMainWindow):
 
         self.person = person
         print(self.person)
+
+        if self.person[-1] == "Принято":
+            self.ui.pushButton.setDisabled(1)
+            self.ui.pushButton_3.setDisabled(1)
 
         self.ui.pushButton.clicked.connect(self.go_zap)
         self.ui.pushButton_2.clicked.connect(self.go_watch)

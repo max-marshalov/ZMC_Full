@@ -138,10 +138,17 @@ class Join(QtWidgets.QMainWindow):
                     self.ui.label_error.show()
                     return
                 else:
-                    pass
+                    pass #Деканат
             else:
-                pass
+                pass #Приемная комиссия
         else:
+            ex1 = curs.execute("""Select * FROM Students where FIO = {}""".format(ex[0])).fetchone()
+            if not ex1:
+                self.ui.label_error.setText("Неверный логин или пароль")
+                self.ui.label_error.show()
+                return
+            else:
+                pass #Студенты
             try:
                 self.win = Menu(self, person=ex)
                 self.close()

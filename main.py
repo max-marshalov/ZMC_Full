@@ -33,6 +33,7 @@ def send_emails(mail, msg):
     server.quit()
     print('E-mails successfully sent!')
 
+
 class CheckWindow(QMainWindow, Ui_Check):
     def __init__(self, path, user):
         self.user = user
@@ -67,7 +68,7 @@ class CheckWindow(QMainWindow, Ui_Check):
             f"""SELECT FIO from UserForm WHERE id = {self.user}""").fetchone()[0]
         self.label_FIO.setText(self.fio)
         self.mail = self.curs.execute(
-                f"""SELECT email from UserForm WHERE id = {self.user}""").fetchall()[0]
+            f"""SELECT email from UserForm WHERE id = {self.user}""").fetchall()[0]
 
     def sending(self):
         self.wrongs = []
@@ -182,6 +183,7 @@ class CheckWindow(QMainWindow, Ui_Check):
         except Exception as er:
             print(er)
 
+
 class Results_Table(QMainWindow, Ui_Results_Table):
     def __init__(self, path):
         self.path = path
@@ -246,6 +248,7 @@ class Results_Table(QMainWindow, Ui_Results_Table):
 
         except Exception as er:
             print(er)
+
 
 class UI_Komissia(QMainWindow, Ui_Komissia):
     def __init__(self, path):
@@ -351,7 +354,6 @@ class UI_Komissia(QMainWindow, Ui_Komissia):
             self.win.show()
         except Exception as error:
             print(error)
-
 
 
 class Example(QWidget):
@@ -675,9 +677,13 @@ class Join(QtWidgets.QMainWindow):
         else:
             ex1 = curs.execute("""Select * FROM Students where FIO = {}""".format(ex[0])).fetchone()
             if not ex1:
-                self.ui.label_error.setText("Неверный логин или пароль")
-                self.ui.label_error.show()
-                return
+                try:
+                    self.win = Menu(self, person=ex)
+                    self.close()
+                    self.win.show()
+
+                except Exception as er:
+                    print(er)
             else:
                 try:
                     fio = curs.execute(
@@ -692,15 +698,8 @@ class Join(QtWidgets.QMainWindow):
                     self.win = Student_Room("DATABASE.db", ex)
                     self.close()
                     self.win.show()  # Студенты
-                except Exception as ex:
-                    print(ex)
-            try:
-                self.win = Menu(self, person=ex)
-                self.close()
-                self.win.show()
-
-            except Exception as er:
-                print(er)
+                except Exception as excep:
+                    print(excep)
 
     def go_reg(self):
         try:
@@ -719,6 +718,7 @@ class Zap_Step1(QtWidgets.QMainWindow):
         self.ui.setupUi(self)
 
         self.person = person
+        self.file_path = None
 
         self.ui.btn_next.clicked.connect(self.go_next)
 
@@ -728,11 +728,13 @@ class Zap_Step1(QtWidgets.QMainWindow):
         self.file_path = QtWidgets.QFileDialog.getOpenFileName(self, 'headers', 'filename')
 
     def go_next(self):
+
         radio_base_sex = [self.ui.radioButton_female, self.ui.radioButton_male]
         Surname = self.ui.edit_surname.text()
         Name = self.ui.edit_name.text()
         Otch = self.ui.edit_dad.text()
         Sex = None
+
         for i in radio_base_sex:
             if i.isChecked():
                 Sex = i.text()
@@ -741,23 +743,69 @@ class Zap_Step1(QtWidgets.QMainWindow):
         Phone = self.ui.edit_phone.text()
         Birth_place = self.ui.edit_birth_place.text()
         Life = None
+
+        Photo = None
         Photo = self.file_path
+        print('ok')
         radio_base_life = [self.ui.radioButton_yes, self.ui.radioButton_no]
         for i in radio_base_life:
             if i.isChecked():
                 Life = i.text()
 
-        id = self.person[0][0]
+        id = self.person[0]
 
         con = sqlite3.connect("DATABASE.db")
         curs = con.cursor()
-        curs.execute(
-            f"""UPDATE UserForm SET name = "{Name}", surname = "{Surname}", otchestvo = "{Otch}", sex = "{Sex}", email = "{Login}", birthday = "{Date}", place_of_birth = "{Birth_place}", phone_number = "{Phone}", photo_path = "{Photo}", campus = "{Life}" WHERE id = "{id}" """)  # если не будет работать, убери кавычки на id
-        con.commit()
-        con.close()
+        try:
+            curs.execute(
+                f"""UPDATE UserForm SET FIO = "{Name} {Surname} {Otch}", sex = "{Sex}", email = "{Login}", birthday = "{Date}", place_of_birth = "{Birth_place}", phone_number = "{Phone}", photo_path = "{Photo}", campus = "{Life}" WHERE id = "{id}" """)  # если не будет работать, убери кавычки на id
+            con.commit()
+            con.close()
+        except Exception as excep:
+            print(excep)
 
         try:
             self.win = Zap_Step2(self, person=self.person)
+            self.close()
+            self.win.show()
+
+        except Exception as er:
+            print(er)
+
+
+class Zap_Step3(QtWidgets.QMainWindow):
+    def __init__(self, parent=None, person=None):
+        QtWidgets.QWidget.__init__(self, parent)
+        self.ui = Ui_Zap_Step3()
+        self.ui.setupUi(self)
+
+        self.person = person
+
+        self.ui.btn_next.clicked.connect(self.go_next)
+
+    def go_next(self):
+        try:
+            self.win = Zap_Step4(self, person=self.person)
+            self.close()
+            self.win.show()
+
+        except Exception as er:
+            print(er)
+
+
+class Zap_Step4(QtWidgets.QMainWindow):
+    def __init__(self, parent=None, person=None):
+        QtWidgets.QWidget.__init__(self, parent)
+        self.ui = Ui_Zap_Step4()
+        self.ui.setupUi(self)
+
+        self.person = person
+
+        self.ui.btn_next.clicked.connect(self.go_next)
+
+    def go_next(self):
+        try:
+            self.win = Menu(self, person=self.person)
             self.close()
             self.win.show()
 

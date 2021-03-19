@@ -148,6 +148,9 @@
     <property name="text">
      <string>Платная</string>
     </property>
+    <attribute name="buttonGroup">
+     <string notr="true">buttonGroup</string>
+    </attribute>
    </widget>
    <widget class="QRadioButton" name="radio_free">
     <property name="geometry">
@@ -161,6 +164,9 @@
     <property name="text">
      <string>Бюджет</string>
     </property>
+    <attribute name="buttonGroup">
+     <string notr="true">buttonGroup</string>
+    </attribute>
    </widget>
    <widget class="QLabel" name="label_7">
     <property name="geometry">
@@ -210,4 +216,7 @@
  </widget>
  <resources/>
  <connections/>
+ <buttongroups>
+  <buttongroup name="buttonGroup"/>
+ </buttongroups>
 </ui>

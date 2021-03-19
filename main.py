@@ -180,6 +180,8 @@ class Anketa(QMainWindow, Ui_Anketa):
         self.zachetka.save("Зачетка.docx")
         os.startfile(os.path.abspath("Зачетка.docx"), "print")
 
+
+
     def shw_photo(self):
         dt = self.curs.execute(f"""Select photo_path from UserForm where id = {self.id}""").fetchall()[0][0]
         self.ex = Example(dt)
@@ -194,8 +196,7 @@ class Anketa(QMainWindow, Ui_Anketa):
     def save_2(self):
         try:
             self.curs.execute(
-                f"""UPDATE UserForm set phone_number = '{self.edit_phone_number.text()}', email = '{str(
-                    self.edit_email.text())}' WHERE id = {self.id}"""
+                f"""UPDATE UserForm set phone_number = '{self.edit_phone_number.text()}', email = '{str(self.edit_email.text())}' WHERE id = {self.id}"""
             )
             self.con.commit()
         except Exception as ex:
@@ -212,15 +213,11 @@ class Anketa(QMainWindow, Ui_Anketa):
 
         try:
             self.curs.execute(
-                f"""UPDATE Address set address_index = '{str(self.reg_base[0])}', city = '{str(
-                    self.reg_base[1])}', street = '{str(self.reg_base[2])}', house = '{str(
-                    self.reg_base[3])}', flat = '{str(self.reg_base[4])}' WHERE id = {self.reg_adress}"""
+                f"""UPDATE Address set address_index = '{str(self.reg_base[0])}', city = '{str(self.reg_base[1])}', street = '{str(self.reg_base[2])}', house = '{str(self.reg_base[3])}', flat = '{str(self.reg_base[4])}' WHERE id = {self.reg_adress}"""
             )
 
             self.curs.execute(
-                f"""UPDATE Address set address_index = '{str(self.live_base[0])}', city = '{str(
-                    self.live_base[1])}', street = '{str(self.live_base[2])}', house = '{str(
-                    self.live_base[3])}', flat = '{str(self.live_base[4])}' WHERE id = {self.live_adress}"""
+                f"""UPDATE Address set address_index = '{str(self.live_base[0])}', city = '{str(self.live_base[1])}', street = '{str(self.live_base[2])}', house = '{str(self.live_base[3])}', flat = '{str(self.live_base[4])}' WHERE id = {self.live_adress}"""
             )
 
             self.con.commit()
@@ -240,16 +237,16 @@ class Anketa(QMainWindow, Ui_Anketa):
             print(ex)
 
     def go_to_menu(self):
-        self.win = Dekanat("DATABASE.db", self.main_user)
+        self.win = Main("DATABASE.db", self.main_user)
         self.win.show()
         self.close()
 
 
-class Dekanat(QMainWindow, Ui_Dekanat):
+class Main(QMainWindow, Ui_MainWindow):
     def __init__(self, path, user):
         self.path = path
         self.user = user
-        super(Dekanat, self).__init__()
+        super(Main, self).__init__()
         self.setupUi(self)
         self.con = sqlite3.connect(self.path)
         self.curs = self.con.cursor()
@@ -267,19 +264,19 @@ class Dekanat(QMainWindow, Ui_Dekanat):
     def update_data(self):
         self.brch = self.curs.execute(
             """Select id From Branches WHERE name = "{}" """.format(self.comboBox.currentText())).fetchall()[0][0]
-        print(self.brch)
+        # print(self.brch)
         self.dt = self.curs.execute("""Select id, FIO from Students Where Branch = {} """.format(self.brch)).fetchall()
-        print(self.dt)
-        if self.dt:
+        # print(self.dt)
 
+        if self.dt:
+            data = []
             for j in self.dt:
-                data = []
 
                 k = self.curs.execute("""Select FIO from UserForm Where id = {} """.format(j[1])).fetchall()[0][0]
-                # print(j[0], k)
+                print(j[0], k)
 
                 data.append((j[0], k))
-                # print(data)
+                print(data)
                 self.update_table(data)
         else:
             self.update_table(self.dt)
@@ -942,7 +939,7 @@ class Join(QtWidgets.QMainWindow):
                     return
                 else:
                     print(ex[0])
-                    self.win = Dekanat("DATABASE.db", ex[0])
+                    self.win = Main("DATABASE.db", ex[0])
                     self.close()
                     self.win.show()
             else:
